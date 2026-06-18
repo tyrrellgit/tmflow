@@ -1,0 +1,33 @@
+[package]
+name = "tmflow"
+version = "0.1.0"
+edition = "2021"
+authors = ["Rory Tyrrell"]
+description = "Modular ODE flow propagation with swappable integrators, including a verified (outward-rounded interval) Taylor-Model reachability integrator. Write a vector field once; run it under RK4 or verified Taylor Models."
+license = "MIT OR Apache-2.0"
+keywords = ["ode", "reachability", "taylor-model", "interval-arithmetic", "verified"]
+categories = ["mathematics", "science"]
+
+[lib]
+name = "tmflow"
+path = "src/lib.rs"
+
+# Zero runtime dependencies: rigour comes from native f64 ULP-outward rounding.
+[dependencies]
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false }
+
+[[bench]]
+name = "walltime"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.bench]
+opt-level = 3
+lto = true
+codegen-units = 1
