@@ -9,7 +9,7 @@
 //!    `x0 + [0,h]·f(B) ⊆ B` to a self-map fixed point — proves existence,
 //!    uniqueness, and an enclosure of `x(t)` on `[0, h]`.
 //! 2. **Time-Taylor polynomial.** Coefficients `A[0..k]` via the generic
-//!    [`time_series`](crate::jet::time_series) (automatic differentiation of the
+//!    [`time_series`] (automatic differentiation of the
 //!    field in [`Jet`](crate::jet::Jet)+TM arithmetic) — no per-field recurrence.
 //! 3. **Validated remainder (Lagrange form).** Bound the `(k+1)`-th time-Taylor
 //!    coefficient over the a priori box `B` and multiply by `[0,h]^{k+1}`.

@@ -13,7 +13,7 @@
 //! operation is rigorous: the represented set of functions always encloses the
 //! true one.
 //!
-//! `TaylorModel` implements [`Scalar`](crate::scalar::Scalar), so a vector
+//! `TaylorModel` implements [`Scalar`], so a vector
 //! field written generically (see [`crate::system::System`]) evaluates directly
 //! in TM arithmetic — and, composed with [`Jet`](crate::jet::Jet), yields the
 //! verified time-Taylor expansion the integrator needs, with no per-field code.

@@ -42,6 +42,21 @@
 //! [`TaylorModel`]: crate::taylor_model::TaylorModel
 //! [`Jet`]: crate::jet::Jet
 //! [`TaylorModelIntegrator`]: crate::integrators::TaylorModelIntegrator
+//!
+//! ## New here? Read the guide
+//!
+//! The [`docs`] module is a prose-first walkthrough of the concept, the
+//! introductory theory behind verified enclosures, the architecture, and a
+//! hands-on tutorial. Start there if reachability / validated numerics is new to
+//! you, then come back to the per-item API reference below.
+//!
+//! * [`docs::intro`] — why a *set* and not a *point*
+//! * [`docs::theory`] — intervals, Taylor Models, and how a guarantee is possible
+//! * [`docs::architecture`] — the four-trait tour
+//! * [`docs::tutorial`] — hands-on, including bringing your own field
+//! * [`docs::faq`] — design decisions and honest limitations
+
+pub mod docs;
 
 pub mod driver;
 pub mod integrator;

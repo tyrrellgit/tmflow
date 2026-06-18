@@ -16,6 +16,8 @@ the spirit of COSY-Infinity / CAPD).
 - **Lightweight.** Zero runtime dependencies. Rigour comes from native `f64` ULP
   rounding (`next_up` / `next_down`), no `unsafe`, no external GMP/MPFR build.
 
+---
+
 ## Quick start
 
 ```rust
@@ -61,6 +63,28 @@ The figure shows, on the left, the **curved verified reachable set** evolving in
 the phase plane with its rigorous bounding boxes (coloured by time); on the
 right, the bounding-box area and Taylor-Model remainder widths vs time on a log
 scale (the "tightness" of the enclosure). Requires `matplotlib` + `numpy`.
+
+---
+
+## Documentation
+
+The crate ships a full **rustdoc guide** — a prose-first walkthrough that blends
+a practical tutorial with introductory theory, so a newcomer to validated
+numerics can grok both the concept and the API:
+
+```sh
+cargo doc --no-deps --open
+```
+
+Then open the **`docs`** module for the guide:
+
+1. `docs::intro` — why a *set* and not a *point*
+2. `docs::theory` — intervals, Taylor Models, and how a guarantee is possible
+3. `docs::architecture` — the four-trait tour (`Scalar` / `System` / `Integrator` / `Jet`)
+4. `docs::tutorial` — hands-on, including bringing your own field (every snippet is a tested doctest)
+5. `docs::faq` — design decisions and honest limitations
+
+Every public type and function also carries item-level rustdoc.
 
 ## Architecture
 
@@ -116,6 +140,76 @@ impl System<2> for Brusselator {
 Adding a new **integrator** is symmetric: implement `Integrator<N>` and it slots
 into `propagate` without touching any field.
 
+---
+
+## Results — Van der Pol, μ = 1
+
+Initial box: center `(1.4, 0)`, half-widths `±0.08`; step `h = 0.1`, `20` steps
+(`t = 0 → 2.0`). Verified containment is checked against `Monte-Carlo` samples of
+the true flow.
+
+### Verification
+
+**100% Monte-Carlo containment** — every sampled trajectory stays inside the
+verified enclosure at every step, for every order `k = 2..=5` (checked both
+pointwise against the Taylor Model and against its interval bounding box). As `k`
+rises the enclosure tightens dramatically while remaining guaranteed:
+
+| Order `k` | Final verified box area |
+|:--:|--:|
+| 2 | 2.748 |
+| 3 | 0.345 |
+| 4 | 0.238 |
+| 5 | 0.227 |
+
+These match the original Python/`mpmath` reference implementation exactly.
+
+### Wall time (criterion, full 20-step propagation)
+
+Measured on this machine with `cargo bench` (median of 100 samples, release +
+LTO). Numbers will differ on other hardware; the *ratios* are the point.
+
+| Integrator | Time (20 steps) | Rigorous? | What it propagates |
+|---|--:|:--:|---|
+| RK4 (`f64`)        | **1.34 µs** | no  | a single point |
+| Taylor-Model `k=2` | **742 µs**  | yes | a verified set |
+| Taylor-Model `k=3` | **3.45 ms** | yes | a verified set |
+| Taylor-Model `k=4` | **13.9 ms** | yes | a verified set |
+| Taylor-Model `k=5` | **41.3 ms** | yes | a verified set |
+
+RK4 is ~10⁴× faster because it carries one point with no error control, whereas
+the Taylor-Model integrator carries a *guaranteed enclosure of the entire set*
+with a validated remainder. That gap is the honest **cost of rigour**. (For
+reference, the equivalent Python/`mpmath` set propagation runs in ~2 s at `k=4`,
+so the Rust verified path is still ~150× faster than the prototype while
+producing identical enclosures.)
+
+Reproduce: `cargo bench` (HTML reports land in `target/criterion/`).
+
+---
+
+## Layout
+
+```
+src/
+  scalar.rs            Scalar algebra trait (the linchpin)
+  system.rs            System<N> ODE-field trait
+  jet.rs               Jet<A> time-Taylor series + automatic time differentiation
+  integrator.rs        Integrator<N> trait + bbox helpers
+  driver.rs            generic propagate() -> Trajectory
+  interval.rs          sound f64 interval type (outward rounding)
+  taylor_model.rs      multivariate Taylor Model (poly + interval remainder)
+  integrators/
+    rk4.rs             non-rigorous f64 RK4
+    taylor.rs          verified Taylor-Model integrator
+  systems/
+    vanderpol.rs       bundled Van der Pol example field
+examples/              vanderpol (showcase + plot JSON), validate (containment report)
+benches/walltime.rs    criterion benchmark group
+tests/                 soundness.rs, containment.rs
+scripts/plot.py        optional matplotlib helper (curved set + tightness figure)
+```
+
 ## Design notes
 
 - **No external interval crate.** `inari` (IEEE-1788) pulls in `gmp-mpfr-sys`,
@@ -126,3 +220,7 @@ into `propagate` without touching any field.
   / Taylor-Model evaluation encloses ground-truth `f64` evaluation across randomized
   inputs; `tests/containment.rs` enforces 100% Monte-Carlo containment and that the
   enclosure shrinks with `k`.
+
+## License
+
+MIT OR Apache-2.0.

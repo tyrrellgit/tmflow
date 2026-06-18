@@ -12,7 +12,7 @@
 //!
 //! This is what lets the Taylor-Model integrator work for *any* polynomial field
 //! without a hand-derived series recurrence: it simply evaluates `eval` in
-//! [`Jet`] arithmetic.
+//! [`Jet`](crate::jet::Jet) arithmetic.
 //!
 //! # Example
 //! ```
